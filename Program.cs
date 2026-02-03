@@ -17,22 +17,44 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 
 builder.Services.AddControllers();
 
-// Add CORS services and define a policy
-var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>()
-    ?? new[] { "http://localhost:5173" };
-
+// CORS Configuration - MUST be before building the app
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowWebApp",
-        corsBuilder =>
+    options.AddPolicy("AllowFrontends", policy =>
+    {
+        policy.SetIsOriginAllowed(origin =>
         {
-            corsBuilder.WithOrigins(allowedOrigins)
-                   .AllowAnyMethod()
-                   .AllowAnyHeader()
-                   .AllowCredentials();
-        });
-});
+            if (string.IsNullOrWhiteSpace(origin))
+                return false;
 
+            try
+            {
+                var uri = new Uri(origin);
+
+                // Allow production Netlify (HTTPS only)
+                if (uri.Host == "storage-unit.netlify.app" && uri.Scheme == "https")
+                    return true;
+
+                // Allow localhost (HTTP)
+                if (uri.Host == "localhost" && uri.Scheme == "http")
+                    return true;
+
+                // Allow local network IPs (HTTP and HTTPS for phone testing)
+                if (uri.Host.StartsWith("192.168.") && (uri.Scheme == "http" || uri.Scheme == "https"))
+                    return true;
+
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
+        })
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials();
+    });
+});
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -53,11 +75,11 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 }
 
-// CRITICAL: UseCors MUST come before UseAuthorization and MapControllers
-app.UseCors("AllowWebApp");
+// ⚠️ CRITICAL: Order matters! UseCors MUST come FIRST
+app.UseCors("AllowFrontends");
 
+app.UseRouting();
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();
