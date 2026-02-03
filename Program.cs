@@ -28,7 +28,8 @@ builder.Services.AddCors(options =>
         {
             corsBuilder.WithOrigins(allowedOrigins)
                    .AllowAnyMethod()
-                   .AllowAnyHeader();
+                   .AllowAnyHeader()
+                   .AllowCredentials();
         });
 });
 
@@ -46,9 +47,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// app.UseHttpsRedirection(); // <-- THIS LINE IS THE CULPRIT. Commenting it out for local development.
+// Enable HTTPS redirection in production (Render provides HTTPS)
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
-// Use the CORS policy
+// CRITICAL: UseCors MUST come before UseAuthorization and MapControllers
 app.UseCors("AllowWebApp");
 
 app.UseAuthorization();

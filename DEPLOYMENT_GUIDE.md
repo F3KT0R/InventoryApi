@@ -1,55 +1,95 @@
-# Free Hosting Options for .NET Backend
+# Free Hosting Options for .NET Backend (Truly Free Forever)
 
-## Recommended: Railway (https://railway.app)
+## 🏆 Best Free Option: Render (https://render.com)
 
-**Best option for your use case**
-- ✅ Free tier: $5/month credit (enough for small apps)
-- ✅ Easy deployment from GitHub
-- ✅ Supports .NET natively
+**100% Free Tier - No credit card required, no time limit**
+- ✅ **Completely FREE forever** (not a trial)
+- ✅ Deploy from GitHub automatically
+- ✅ Native Docker support for .NET
 - ✅ Automatic HTTPS
 - ✅ Environment variables built-in
-- ✅ PostgreSQL database support
+- ⚠️ Spins down after 15 minutes of inactivity (cold start ~30 seconds on first request)
+- ⚠️ 750 hours/month free (plenty for one app)
 
-### Deployment Steps:
-1. Push your code to GitHub
-2. Sign up at railway.app
-3. Create new project → Deploy from GitHub
-4. Select your repository
-5. Add environment variables in Railway dashboard
-6. Railway auto-detects .NET and builds it
+**Best for:** Apps with occasional traffic, testing, portfolio projects
+
+### Deployment Steps for Render:
+1. Push your code to GitHub (with the Dockerfile already in your project)
+2. Sign up at [render.com](https://render.com) - no credit card needed
+3. Click "New +" → "Web Service"
+4. Connect your GitHub repository
+5. Configure:
+   - **Name:** your-app-name
+   - **Environment:** Docker
+   - **Instance Type:** Free
+6. Add environment variables (see below)
+7. Click "Create Web Service"
+8. Render will build and deploy automatically
 
 ---
 
-## Alternative: Render (https://render.com)
+## Alternative 1: Fly.io (https://fly.io)
 
-**Good alternative**
-- ✅ Free tier available
+**Free tier with generous allowances**
+- ✅ Free tier: 3 VMs with 256MB RAM each
+- ✅ Excellent .NET support
+- ✅ CLI-based deployment
+- ✅ Fast cold starts
+- ⚠️ Requires credit card for verification (but won't charge unless you upgrade)
+- ⚠️ More technical setup (CLI required)
+
+### Deployment Steps for Fly.io:
+1. Install Fly CLI: `powershell -c "iwr https://fly.io/install.ps1 -useb | iex"`
+2. Login: `fly auth login`
+3. In your project directory: `fly launch`
+4. Follow prompts and set environment variables
+5. Deploy: `fly deploy`
+
+---
+
+## Alternative 2: Koyeb (https://koyeb.com)
+
+**Free tier available**
+- ✅ Free tier with 1 service
 - ✅ Deploy from GitHub
-- ✅ Supports Docker (needed for .NET)
-- ✅ Auto-deploy on git push
-- ⚠️ Free tier spins down after inactivity (slow cold starts)
-
-### Deployment Steps:
-1. Create a `Dockerfile` in project root
-2. Push to GitHub
-3. Connect Render to your GitHub repo
-4. Configure environment variables in Render
-5. Deploy
+- ✅ Docker support
+- ✅ No credit card required
+- ⚠️ Smaller free tier resources
+- ⚠️ May have geographic restrictions
 
 ---
 
-## Alternative: Azure App Service (https://azure.microsoft.com)
+## Alternative 3: Cyclic (https://cyclic.sh)
 
-**Microsoft's solution**
-- ✅ Native .NET support (best compatibility)
-- ✅ Free tier (F1 - 60 min/day limit)
-- ✅ Easy deployment with VS Code Azure extension
-- ⚠️ More complex setup
-- ⚠️ Limited free tier
+**Note:** Cyclic is mainly for Node.js, not ideal for .NET
 
 ---
 
-## Environment Variables Setup
+## ⚠️ Limited Free Options
+
+### Railway (https://railway.app)
+- ❌ Only $5 credit for trial (requires paid Hobby plan after)
+- Not truly free long-term
+
+### Azure App Service
+- ⚠️ Free tier (F1) has 60 CPU minutes/day limit
+- Good for very light usage only
+
+---
+
+## 🎯 RECOMMENDED SETUP: Render
+
+For your use case (Netlify frontend + .NET backend), **Render is the best free option**.
+
+### What to expect:
+- **First request after inactivity:** ~30 second delay (cold start)
+- **Subsequent requests:** Normal speed
+- **Perfect for:** Portfolio projects, learning, low-traffic apps
+- **Upgrade path:** Easy to upgrade to paid tier later if needed
+
+---
+
+## Environment Variables Setup (All Platforms)
 
 After deploying to any platform, set these environment variables:
 
@@ -63,27 +103,19 @@ EmailSettings__FromEmail=boris.orescanin.uk@gmail.com
 EmailSettings__FromName=Storage Unit Tracker
 EmailSettings__Username=boris.orescanin.uk@gmail.com
 EmailSettings__Password=tgmf gvdz ojzk ckls
+
+AllowedOrigins__0=https://your-app.netlify.app
+AllowedOrigins__1=http://localhost:5173
 ```
 
 Note: Use double underscores `__` for nested configuration in environment variables.
 
 ---
 
-## CORS Configuration for Netlify
+## CORS Configuration
 
-Update your `Program.cs` CORS settings to allow your Netlify domain:
+Your app is already configured to read allowed origins from configuration. Once deployed:
 
-```csharp
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowFrontend", policy =>
-    {
-        policy.WithOrigins(
-            "http://localhost:5173",
-            "https://your-app.netlify.app"
-        )
-        .AllowAnyHeader()
-        .AllowAnyMethod();
-    });
-});
-```
+1. Get your Netlify app URL (e.g., `https://your-app.netlify.app`)
+2. Add it to the `AllowedOrigins__0` environment variable
+3. Your API will allow requests from your Netlify frontend
